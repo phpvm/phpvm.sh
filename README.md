@@ -26,10 +26,6 @@ To install a specific version of node:
 ```sh
 phpvm install 5.6 # or 7.1, 7.2, 7.3, 7.4, 8.0
 ```
-To install extensions in an active version of PHP:
-```sh
-phpvm add xml mbstring pdo # list of extensions separated by spaces  
-```
 And then in any new shell just use the installed version:
 ```sh
 phpvm use 5.6 # or 7.1, 7.2, 7.3, 7.4, 8.0
@@ -38,6 +34,17 @@ To uninstall a specific version of node:
 ```sh
 phpvm uninstall 5.6 # or 7.1, 7.2, 7.3, 7.4, 8.0
 ```
+
+### Extensions
+To install extensions in an active version of PHP:
+```sh
+phpvm add xml mbstring pdo # list of extensions separated by spaces  
+```
+To install extensions in an active version of PHP from `composer.json`:
+```sh
+phpvm add --from-composer
+```
+
 
 # TODO:
 

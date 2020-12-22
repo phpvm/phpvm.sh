@@ -27,11 +27,14 @@ phpvm() {
   shift
 
   case $COMMAND in
-  'add') phpvm_add "$@";;
-  'use') phpvm_use "$@";;
-  'install') phpvm_install "$@";;
-  'uninstall') phpvm_uninstall "$@";;
-  *) phpvm_echo "$COMMAND is a invalid command"; return 100;;
+  'add') phpvm_add "$@" ;;
+  'use') phpvm_use "$@" ;;
+  'install') phpvm_install "$@" ;;
+  'uninstall') phpvm_uninstall "$@" ;;
+  *)
+    phpvm_echo "$COMMAND is a invalid command"
+    return 100
+    ;;
   esac
 }
 
@@ -45,12 +48,28 @@ phpvm_bin_list() {
   find $PHP_BIN_PREFIX -maxdepth 1 -type f -printf "%f\n"
 }
 
+# shellcheck disable=SC2120
+phpvm_extension_list_from_composer() {
+  local -r EXTENSIONS=$(grep "\"ext-*" <"${1-$(pwd)/composer.json}" | sed -r 's/.*"ext-([a-zA-Z]*)".*/\1/')
+  for EXTENSION in $EXTENSIONS; do
+    phpvm_add "$EXTENSION"
+  done
+}
+
 phpvm_add() {
   local -r PHP_ALIAS_VERSION=$(phpvm_current | cut -d'.' -f1,2)
   local PHP_BIN="php$PHP_ALIAS_VERSION"
-  for EXTENSION in "$@" ; do
-      sudo apt install "$PHP_BIN-$EXTENSION"
-  done
+
+  case "$@" in
+  '--from-composer')
+    phpvm_extension_list_from_composer
+    shift
+    ;;
+  *)
+    sudo apt install "$PHP_BIN-$1"
+    shift
+    ;;
+  esac
 }
 
 phpvm_install() {
@@ -64,8 +83,8 @@ phpvm_install() {
 phpvm_uninstall() {
   sudo apt remove "php$1"
   sudo apt autoremove
-  for EXTENSION in $(dpkg --get-selections | grep "php$1" | cut  -f1) ; do
-      sudo apt remove "$EXTENSION"
+  for EXTENSION in $(dpkg --get-selections | grep "php$1" | cut -f1); do
+    sudo apt remove "$EXTENSION"
   done
 }
 
@@ -88,7 +107,7 @@ phpvm_current() {
 }
 
 phpvm_disable_all_php_modules_apache() {
-  for PHP_BIN in $(phpvm_bin_list) ; do
-      sudo a2dismod "$PHP_BIN"
+  for PHP_BIN in $(phpvm_bin_list); do
+    sudo a2dismod "$PHP_BIN"
   done
 }
